@@ -204,7 +204,7 @@ export function makeWakuObjectContext(adapter: WakuObjectAdapter, contextProps?:
 
 interface EventListenerOptions {
   onDataMessage: (dataMessage: DataMessage, args: WakuObjectArgs) => Promise<void>
-  onContextChange: (state: WakuObjectState, context: WakuObjectContextProps) => Promise<void>
+  onArgsChange: (args: WakuObjectArgs) => Promise<void>
 }
 
 export function startEventListener(options: Partial<EventListenerOptions>) {
@@ -220,23 +220,30 @@ export function startEventListener(options: Partial<EventListenerOptions>) {
     const { data } = event;
 
     if (isIframeDataMessage(data)) {
-      const message = data.message as DataMessage
-      const adapter = makeWakuObjectAdapter()
-      const context = makeWakuObjectContext(adapter, data.context)
-      const args: WakuObjectArgs = {
-        ...context,
-        ...data.state
-      }
       if (options.onDataMessage) {
-        options.onDataMessage(message, args)
+        const message = data.message as DataMessage
+        const adapter = makeWakuObjectAdapter()
+        const context = makeWakuObjectContext(adapter, data.context)
+        const args: WakuObjectArgs = {
+          ...context,
+          ...data.state
+        }
+          options.onDataMessage(message, args)
       }
       return
     }
 
     if (isIframeContextChange(data)) {
-      if (options.onContextChange) {
-        options.onContextChange(data.state, data.context)
+      if (options.onArgsChange) {
+        const adapter = makeWakuObjectAdapter()
+        const context = makeWakuObjectContext(adapter, data.context)
+        const args: WakuObjectArgs = {
+          ...context,
+          ...data.state
+        }
+        options.onArgsChange(args)
       }
+      return
     }
 
     if (!isAdapterResponseMessage(data)) {
@@ -261,4 +268,16 @@ export function startEventListener(options: Partial<EventListenerOptions>) {
   // send `init` message after object side initialization is complete
   // the host application will respond with the updated context
   parent.postMessage({ type: 'init' }, '*')
+}
+
+export function updateSize() {
+  const { scrollWidth, scrollHeight } = document.body
+  parent.postMessage(
+    {
+      type: 'window-size',
+      scrollWidth,
+      scrollHeight,
+    },
+    '*',
+  )
 }

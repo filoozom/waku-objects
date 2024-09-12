@@ -2,13 +2,13 @@
   "name": "@waku-objects/adapter",
   "version": "0.4.0",
   "type": "module",
-  "main": "./dist/adapter.umd.cjs",
+  "main": "./dist/adapter.umd.js",
   "module": "./dist/adapter.es.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/adapter.es.js",
-      "require": "./dist/adapter.umd.cjs"
+      "require": "./dist/adapter.umd.js"
     }
   },
   "scripts": {
